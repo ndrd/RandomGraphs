@@ -8,10 +8,13 @@
 
   <target name="graphs.jar" depends="compile.graphs">
     <jar jarfile="graphs.jar">
-      <zipfileset dir="${build.dir}" prefix="" />
+    <zipfileset dir="${build.dir}" prefix="" />
       <manifest>
+        <attribute name="Class-Path" value="${lib.dir}"/>
         <attribute name="Main-Class" value="graph.App"/>
       </manifest>
+      <zipgroupfileset  dir="${lib.dir}"/>
+
     </jar>
   </target>
 

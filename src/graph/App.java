@@ -9,18 +9,20 @@ import java.util.Stack;
 
 public class App {
 
+	private final static int NODES = 100;
+
 	public static void main(String[] args) {
 		//Generating a random graph 
 		Graph graph = new SingleGraph("Random");
 		Generator gen = new RandomGenerator(2);
 		gen.addSink(graph);
 		gen.begin();
-		for(int i = 0; i <= 100; i++)
+		for(int i = 0; i <= NODES; i++)
 			gen.nextEvents();
 		gen.end();
 		
 		setCSS(graph);
-		int [][] matx = new int[100][100];
+		int [][] matx = new int[NODES][NODES];
 		
 		Iterator <? extends Node> nodes = graph.getNodeIterator();
 		Node nodo;
