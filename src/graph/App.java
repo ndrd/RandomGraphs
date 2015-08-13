@@ -10,7 +10,7 @@ import java.util.Stack;
 
 public class App {
 
-	private final static int NODES = 100;
+	private final static int NODES = 40;
 
 	public static void main(String[] args) {
 		//Generating a random graph 
@@ -21,38 +21,44 @@ public class App {
 		for(int i = 0; i <= NODES; i++)
 			gen.nextEvents();
 		gen.end();
-		
-		int [][] matx = new int[NODES][NODES];
-		
-		
-		//Stack <? extends Node> st = new Stack();
-		
 
-		ConnectedComponents cc = new ConnectedComponents();
-        cc.init(graph);
-        String css = randomCSS(cc.getConnectedComponentsCount());
+        String css = randomCSS(NODES);
        	setCSS(graph, css);
 
-        
-        Iterator<ConnectedComponents.ConnectedComponent> components = cc.iterator();
-		 Iterator <Node> nodes;
-		 Node nodo;
- 		int i = 0;
+		Iterator <? extends Node> nodes = graph.getNodeIterator();
+		Node nodo;
+       
+       int i = 0;
+       Stack <Node> st = new Stack<Node>();
 
- 		while (components.hasNext()) {
- 			String cluster = "cluster"+i;
- 				System.out.println(cluster);
+       
+       while(nodes.hasNext()){
 
- 			for (Node n : components.next().getEachNode()) {
- 				System.out.println("aa");
-				n.addAttribute("ui.style", "fill-color: rgb(0,100,255);");
+       		st.push(nodes.next());
+	       	
+	       	String cs = "cluster"+i;
 
- 			}
- 			i++;
+	       	while (!st.empty()) {
+	       		Node tmp = st.pop();
+	       		
+	       		if (!tmp.hasAttribute("visited")) {
+	       			tmp.addAttribute("visited", "true");
+	       			tmp.addAttribute("ui.class", cs);
+	       			Iterator<? extends Node> neighbors = tmp.getNeighborNodeIterator();
+	       			Node neighbor;
+	       			
+	       			while(neighbors.hasNext()){
+	       				st.push(neighbors.next());
+	       			}
 
- 		}
+	       		}
 
-		
+	       	}
+	       	i++;
+
+		}
+
+
 		graph.display();
 	}
 
@@ -69,12 +75,11 @@ public class App {
 		int a = Math.round((int)(Math.random() * 16));
 		int b = Math.round((int)(Math.random() * 16));
 		int c = Math.round((int)(Math.random() * 16));
-		//return "#" + alph[a] + alph[a] + alph[b] + alph[b] + alph[c] + alph[c]; 
-		return "lime";
+		return "#" + alph[a] + alph[a] + alph[b] + alph[b] + alph[c] + alph[c]; 
+		//return "lime";
 	}
 	
 	static void setCSS(Graph graph, String css){
-		        System.out.println(css);
 
 		/*String css =
 					"node{fill-color:grey;} "
