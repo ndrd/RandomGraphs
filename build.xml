@@ -11,7 +11,7 @@
     <zipfileset dir="${build.dir}" prefix="" />
       <manifest>
         <attribute name="Class-Path" value="${lib.dir}"/>
-        <attribute name="Main-Class" value="graph.App"/>
+        <attribute name="Main-Class" value="lab.graph.App"/>
       </manifest>
       <zipgroupfileset  dir="${lib.dir}"/>
 
