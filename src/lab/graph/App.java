@@ -14,9 +14,9 @@ import java.util.Iterator;
 import java.util.Stack; 
 
 
-public class App{	 
+public class App {	 
 	
-    private final static int NODES = 40;
+    private final static int NODES = 600;
 
     public static void main(String args[]) {
 
@@ -26,7 +26,7 @@ public class App{
         Iterator<? extends Node> neighbors;
         Set<Integer> semi_recipients = new HashSet<Integer>();
 
-        for(Node n :g ) {
+        for(Node n : g ) {
             neighbors = n.getNeighborNodeIterator();
             
             while(neighbors.hasNext()) {
@@ -51,41 +51,17 @@ public class App{
 
     }
 
-    /*
-
-        List<NodeProcess> procs = new ArrayList<NodeProcess>(0);
-        
-        //NodeProcess(<UID>,<Set of neighbors>, <Set of recepients>)
-        Set<Integer> recepients =  new HashSet<Integer>(Arrays.asList(0, 1, 2, 3));
-        
-        //Creating ring network
-        procs.add(new NodeProcess(0, new HashSet<Integer>(Arrays.asList(1)), recepients));
-        procs.add(new NodeProcess(1, new HashSet<Integer>(Arrays.asList(2)), recepients));
-        procs.add(new NodeProcess(2, new HashSet<Integer>(Arrays.asList(3)), recepients));
-        procs.add(new NodeProcess(3, new HashSet<Integer>(Arrays.asList(0)), recepients));
-        
-        //Run distributed system
-        for(NodeProcess proc : procs) proc.start();
-        
-        //Wait until all processes are finished
-        boolean isAlive = true;
-        while(isAlive){
-            isAlive = false;
-            for(NodeProcess proc : procs) isAlive = isAlive ? true : proc.isAlive();
-        }
-        
-        //Print finished states
-        for(NodeProcess proc : procs)System.out.println("Proc " + proc.getUid() + " finished with code " + proc.getExitState());
-    */
 
     static Graph getRandomGraph() {
         Graph graph = new SingleGraph("Random");
         Generator gen = new RandomGenerator(2);
         gen.addSink(graph);
         gen.begin();
+        
         for(int i = 0; i <= NODES; i++)
             gen.nextEvents();
         gen.end();
+        
         return graph;
     }
 
@@ -94,16 +70,15 @@ public class App{
         setCSS(graph, css);
 
         Iterator <? extends Node> nodes = graph.getNodeIterator();
-        Node nodo;
-       
+
         int i = 0;
+        
         Stack <Node> st = new Stack<Node>();
 
        
         while(nodes.hasNext()){
 
-            st.push(nodes.next());
-            
+            st.push(nodes.next());    
             String cs = "cluster"+i;
 
             while (!st.empty()) {
@@ -113,9 +88,8 @@ public class App{
                     tmp.addAttribute("visited", "true");
                     tmp.addAttribute("ui.class", cs);
                     Iterator<? extends Node> neighbors = tmp.getNeighborNodeIterator();
-                    Node neighbor;
                     
-                    while(neighbors.hasNext()){
+                    while(neighbors.hasNext()) {
                         st.push(neighbors.next());
                     }
 
@@ -142,7 +116,6 @@ public class App{
         int b = Math.round((int)(Math.random() * 16));
         int c = Math.round((int)(Math.random() * 16));
         return "#" + alph[a] + alph[a] + alph[b] + alph[b] + alph[c] + alph[c]; 
-        //return "lime";
     }
     
     static void setCSS(Graph graph, String css){
