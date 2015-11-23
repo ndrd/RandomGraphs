@@ -55,11 +55,11 @@ class Plot extends JFrame{
                 for(NodeProcess n : procs){
                     j = 1;
                     for(LamportClock.TimeStamp v : n.getClock().getTS()){
-                        go.setPaint(Color.blue); 
+                        go.setPaint(Color.black); 
                         go.fillOval(60*j,dis*i-3,5,5);
                         go.drawString("p"+i+"e"+j,60*j,dis*i-5);
                         if(v.nPrcss != (n.getUid())){
-                            go.setPaint(Color.red);
+                            go.setPaint(Color.blue);
                             drawArrow(go,60*v.nEvnt+2,dis*v.nPrcss,60*j+2,dis*i);
                         }
                         j++;
@@ -67,7 +67,7 @@ class Plot extends JFrame{
                     i++;
                 }
             } catch (Exception e) {
-                
+
             }
     		
     	}

@@ -43,6 +43,7 @@ public class NodeProcess extends Thread {
 
         this.log =  new ArrayList<>();
         this.evnts = 0;
+        this.clock = new LamportClock();
 
 	}
 	
@@ -64,7 +65,7 @@ public class NodeProcess extends Thread {
         	while(true){
         		//**************** SEND MESSAGE *****************
         		for(Integer finalDestUID : recepients) {
-                    clock.add(LamportClock.stamp(uid, evnts));
+                    clock.add(clock.stamp(uid, evnts));
                     Message mssg  = new Message(finalDestUID, uid, evnts++);
         			if(queue.send(mssg, getRandNeighbor())) {
                        // System.out.println("ESTADO : nodo " + uid + " emvia mensaje a nodo " + finalDestUID);
@@ -79,7 +80,7 @@ public class NodeProcess extends Thread {
         		//**************** RECEIVE MESSAGE **************
         		Message msg = queue.receive(uid);
                 evnts++;
-                clock.add(LamportClock.stamp(msg.getOrigin()+1, msg.getEvent() ));
+                clock.add(clock.stamp(msg.getOrigin()+1, msg.getEvent() ));
         		
         		if(msg != null){
         			if(msg.finalDestUID == uid){
@@ -113,7 +114,7 @@ public class NodeProcess extends Thread {
         		
             	sleep(1);
             }
-        }catch(Exception e){
+        }catch(Exception e) {
         	System.err.println("Process " + uid + " died: " + e.getMessage());
             status = State.DIE;
         }

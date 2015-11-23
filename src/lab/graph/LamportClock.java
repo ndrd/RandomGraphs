@@ -5,7 +5,8 @@ import java.util.ArrayList;
 public class LamportClock {
 
 	private ArrayList<TimeStamp> stamps;
-	private static TimeStamp st;
+
+
 
 	class TimeStamp {
 		int nPrcss;
@@ -26,10 +27,8 @@ public class LamportClock {
 		stamps.add(ts);
 	}
 
-	public static TimeStamp stamp(int prcss, int evnt) {
-		st.nPrcss = prcss;
-		st.nEvnt = evnt;
-		return st;
+	public TimeStamp stamp(int prcss, int evnt) {
+		return new TimeStamp(prcss, evnt);
 	}
 
 	public ArrayList<TimeStamp> getTS() {
