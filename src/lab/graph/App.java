@@ -12,29 +12,85 @@ import org.graphstream.algorithm.generator.RandomGenerator;
 import org.graphstream.algorithm.ConnectedComponents;
 import java.util.Iterator;
 import java.util.Stack; 
+import javax.swing.JFrame;
 
 
 public class App {	 
 	
-    private final static int NODES = 600;
+    private final static int NODES = 10;
 
     public static void main(String args[]) {
 
         List<NodeProcess> procs = new ArrayList<NodeProcess>(0);
 
     	Graph g = getRandomGraph();
+        colourGraph(g);
+        for (Node n : g)
+            n.addAttribute("ui.label", n.getId());
+      
+        run(g, procs);
+        ArrayList<String> s1 = new ArrayList<>();
+        ArrayList<String> s2 = new ArrayList<>();
+
+        try {
+            for(NodeProcess n: procs) {
+                for (LamportClock.TimeStamp ts : n.getClock().getTS()) {
+                    if (ts.nPrcss != n.getUid()) {
+                        System.out.println(ts.nPrcss + "/" + ts.nEvnt);
+                    }
+                }
+                for (String i : n.getLog()) {
+                    s1.add(i);
+                }
+            }    
+        } catch (Exception e) {
+
+        }
+        
+        procs = new ArrayList<NodeProcess>(0);
+        run(g, procs);
+
+        try {
+            for(NodeProcess n: procs) {
+                for (LamportClock.TimeStamp ts : n.getClock().getTS()) {
+                    if (ts.nPrcss != n.getUid()) {
+                        System.out.println(ts.nPrcss + "/" + ts.nEvnt);
+                    }
+                }
+                for (String i : n.getLog()) {
+                    s2.add(i);
+                }
+            }    
+        } catch (Exception e) {
+
+        }
+
+        System.out.println(s1.size() + " - " + s2.size());
+
+        JFrame jf=new Plot(procs);
+        jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        jf.setSize(1200,750);
+        jf.setVisible(true);
+
+
+
+    }
+
+    static void run(Graph g, List<NodeProcess> procs) {
         Iterator<? extends Node> neighbors;
         Set<Integer> semi_recipients = new HashSet<Integer>();
 
         for(Node n : g ) {
             neighbors = n.getNeighborNodeIterator();
-            
+
             while(neighbors.hasNext()) {
                 semi_recipients.add(neighbors.next().getIndex());
             }
 
             procs.add(new NodeProcess(n.getIndex(), semi_recipients, semi_recipients));
         }
+
+        g.display();
 
         for(NodeProcess proc : procs) proc.start();
 
@@ -48,13 +104,11 @@ public class App {
          //Print finished states
         for(NodeProcess proc : procs)System.out.println("Proc " + proc.getUid() + " finished with code " + proc.getExitState());
 
-
     }
 
-
     static Graph getRandomGraph() {
-        Graph graph = new SingleGraph("Random");
-        Generator gen = new RandomGenerator(2);
+        Graph graph = new MultiGraph("Random");
+        Generator gen = new RandomGenerator(5);
         gen.addSink(graph);
         gen.begin();
         
@@ -105,7 +159,7 @@ public class App {
     static String randomCSS(int elems) {
         String css = "";
         for (int i = 0; i < elems ; i++ ) {
-            css += "node.cluster"+i + " {fill-color:" + colorAleatorio()+ "; size:" + (16+i) + "px;} ";
+            css += "node.cluster"+i + " {fill-color:" + colorAleatorio()+ "; size:" + (6+0) + "px;} ";
         }
         return css;
     }

@@ -3,16 +3,31 @@ package lab.graph;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NodeProcess extends Thread {
+
+    public enum State {
+        INACTIVE,
+        RUNNING,
+        FINISH_SUCCESFUL,
+        RECEIVING,
+        SENDING,
+        ERROR,
+        DIE
+    }
 
 	private Integer uid;
 	private Set<Integer> neighbors;
 	private MsgQueue queue;
 	private Set<Integer> recepients;
-	private String status;
+    private ArrayList<String> log;
+    private Integer evnts;
+    private LamportClock clock;
 
-	private Integer exitState = 0; //0 - is running, 1 - received 5 messages, 2 - died by lifetime, 3 - died by an error 
+
+	private State status; //0 - is running, 1 - received 5 messages, 2 - died by lifetime, 3 - died by an error 
 	
 	public NodeProcess  (Integer uid, Set<Integer> neighbors, Set<Integer> recepients) {
 		this.uid = uid;
@@ -23,8 +38,12 @@ public class NodeProcess extends Thread {
 		this.recepients = new HashSet<Integer>();
 		this.recepients.addAll(recepients);
 		
-		queue = MsgQueue.getInstance();
-        status = "inactive";
+		this.queue = MsgQueue.getInstance();
+        this.status = State.INACTIVE;
+
+        this.log =  new ArrayList<>();
+        this.evnts = 0;
+
 	}
 	
 	public void run(){
@@ -33,7 +52,7 @@ public class NodeProcess extends Thread {
         //kill process if it has no neighbors 
         if(neighbors.isEmpty()){
         	System.out.println("STATUS : Process " + uid + " nas no neighbors, stopped");
-        	exitState = 2;
+        	status = State.FINISH_SUCCESFUL;
         	return;
         }
         
@@ -45,17 +64,22 @@ public class NodeProcess extends Thread {
         	while(true){
         		//**************** SEND MESSAGE *****************
         		for(Integer finalDestUID : recepients) {
-                    status = "sending message to " +  finalDestUID;
-        			if(queue.send(new Message(finalDestUID), getRandNeighbor())) {
-                        System.out.println("ESTADO : nodo " + uid + " emvia mensaje a nodo " + finalDestUID);
-
-        				recepients.remove(finalDestUID);
+                    clock.add(LamportClock.stamp(uid, evnts));
+                    Message mssg  = new Message(finalDestUID, uid, evnts++);
+        			if(queue.send(mssg, getRandNeighbor())) {
+                       // System.out.println("ESTADO : nodo " + uid + " emvia mensaje a nodo " + finalDestUID);
+                        status = State.SENDING;
+                        System.out.println("-------------");
+                        log.add(mssg.getOrigin() + " envio un mensaje  a " + mssg.getDest() );
+                        recepients.remove(finalDestUID);
         				break;
         			}
         		}
         		
         		//**************** RECEIVE MESSAGE **************
         		Message msg = queue.receive(uid);
+                evnts++;
+                clock.add(LamportClock.stamp(msg.getOrigin()+1, msg.getEvent() ));
         		
         		if(msg != null){
         			if(msg.finalDestUID == uid){
@@ -75,8 +99,7 @@ public class NodeProcess extends Thread {
         		//**************** CHECK RECEIVED ****************
         		if(received == 1){
 					System.out.println("Process " + uid + " received all messages and finished");
-                    status = "all_msg_received";
-					exitState = 1;
+                    status = State.RECEIVING;
 					break;
 				}
         		
@@ -84,8 +107,7 @@ public class NodeProcess extends Thread {
         		lifetime--;
             	if(lifetime == 0){
             		System.out.println("Process " + uid + " lifetime finished");
-                    status = "process_end";
-            		exitState = 2;
+                    status = State.FINISH_SUCCESFUL;
             		break;
             	}
         		
@@ -93,7 +115,7 @@ public class NodeProcess extends Thread {
             }
         }catch(Exception e){
         	System.err.println("Process " + uid + " died: " + e.getMessage());
-        	exitState = 3;
+            status = State.DIE;
         }
     }
 	
@@ -104,8 +126,8 @@ public class NodeProcess extends Thread {
 		return all[queue.getRandom(neighbors.size())];
 	}
 
-	public Integer getExitState() {
-		return exitState;
+	public State getExitState() {
+		return status;
 	}
 	
 	public Integer getUid(){
@@ -137,5 +159,13 @@ public class NodeProcess extends Thread {
     public void setRecepients(Set<Integer> recepients) {
         System.out.println("han cambiado los destinatarios");
         this.recepients = recepients;
-    }        
+    }  
+
+    public LamportClock getClock() {
+        return this.clock;
+    }  
+
+    public ArrayList<String> getLog() {
+        return this.log;
+    }    
 }
